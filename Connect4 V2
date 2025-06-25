@@ -53,6 +53,7 @@ namespace Connect4_FinalProject_KACHOW;
 //--------------------
 //  + GetMove(board): int
 
+
 public class Menu
 {
     public static GameSetup? ShowMainMenu()
@@ -342,6 +343,7 @@ public class Board
 
 }
 
+//Abstract class to handle players of human or Ai kind
 public abstract class Player
 {
     public string Name { get; set; }
@@ -354,6 +356,7 @@ public abstract class Player
     }
     public abstract int GetMove(Board board); //each player type can give their own logic for choosing a column
 }
+
 
 public class HumanPlayer : Player
 {
@@ -382,6 +385,7 @@ public class HumanPlayer : Player
     }
 }
 
+//The AI player incase the player wants to play by themself
 public class ComputerPlayer : Player
 {
     private Random rnd = new Random();
@@ -391,9 +395,9 @@ public class ComputerPlayer : Player
     public override int GetMove(Board board)
     {
         Console.WriteLine($"{Name} is thinking...");
-        Thread.Sleep(800); // Human-like delay
+        Thread.Sleep(1000); //Delay to make the AI feel a bit real
 
-        //First priority: Check if computer can win immediately
+        // 1) First priority: Check if computer can win immediately
         int? winningMove = FindWinningMove(board, this.Symbol);
         if (winningMove != null)
         {
@@ -401,7 +405,7 @@ public class ComputerPlayer : Player
             return winningMove.Value;
         }
 
-        //Second priority: Block opponent from winning
+        // 2) Second priority: Block opponent from winning
         char opponentSymbol = (this.Symbol == 'X') ? 'O' : 'X';
         int? blockingMove = FindWinningMove(board, opponentSymbol);
         if (blockingMove != null)
@@ -410,7 +414,7 @@ public class ComputerPlayer : Player
             return blockingMove.Value;
         }
 
-        //Third:Try to create potential winning opportunities
+        // 3) Third priority: Try to create potential winning opportunities
         int? strategicMove = FindStrategicMove(board);
         if (strategicMove != null)
         {
@@ -658,10 +662,12 @@ public abstract class Game
         // Handle computer player automatically
         if (CurrentPlayer is ComputerPlayer computerPlayer)
         {
-            int computerColumn = computerPlayer.GetMove(Board);  // Changed variable name
+            int computerColumn = computerPlayer.GetMove(Board);
             Board.DropPiece(computerColumn, CurrentPlayer.Symbol);
             LastMovePlayer = CurrentPlayer;
             TurnCounter++;
+            Console.Clear();
+            Board.Display(); 
             if (!IsGameOver()) SwitchPlayers();
             return;
         }
@@ -683,12 +689,14 @@ public abstract class Game
             return;
         }
 
-        if (int.TryParse(input, out int playerColumn) && playerColumn >= 1 && playerColumn <= 7)  // Changed variable name
+        if (int.TryParse(input, out int playerColumn) && playerColumn >= 1 && playerColumn <= 7)
         {
             if (Board.DropPiece(playerColumn, CurrentPlayer.Symbol))
             {
                 LastMovePlayer = CurrentPlayer;
                 TurnCounter++;
+                Console.Clear();
+                Board.Display(); 
                 if (!IsGameOver()) SwitchPlayers();
             }
             else
@@ -704,6 +712,7 @@ public abstract class Game
         }
     }
 
+    //Handles the end sequence of each game
     public override bool IsGameOver() =>
             LastMovePlayer != null && (Board.CheckWin(LastMovePlayer.Symbol) || Board.IsFull());
 
@@ -713,6 +722,7 @@ public abstract class Game
         private void SwitchPlayers() => CurrentPlayer = (CurrentPlayer == Players[0]) ? Players[1] : Players[0];
     }
 
+//Kept the Main as light as possible
     class Program
 {
     static void Main(string[] args)
